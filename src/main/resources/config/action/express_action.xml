@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+    <bean id="expressInboundAction" class="nccloud.web.express.action.ParcelInboundAction"/>
+    <bean id="expressCalculateRuleAction" class="nccloud.web.express.action.CalculateRuleAction"/>
+    <bean id="expressGenerateReminderAction" class="nccloud.web.express.action.GenerateReminderAction"/>
+    <bean id="expressResendPickupCodeAction" class="nccloud.web.express.action.ResendPickupCodeAction"/>
+    <bean id="expressUpdateReturnStatusAction" class="nccloud.web.express.action.UpdateReturnStatusAction"/>
+    <bean id="expressUpdateParcelStatusAction" class="nccloud.web.express.action.UpdateParcelStatusAction"/>
+    <bean id="expressQueryReminderLogsAction" class="nccloud.web.express.action.QueryReminderLogsAction"/>
+</beans>

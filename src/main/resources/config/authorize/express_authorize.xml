@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<authorize>
+    <businesscode>
+        <code>EXPRESS_REMINDER</code>
+        <name>快递驿站滞留件催领</name>
+        <description>快递驿站滞留件催领管理</description>
+        <actions>
+            <action>expressInboundAction</action>
+            <action>expressCalculateRuleAction</action>
+            <action>expressGenerateReminderAction</action>
+            <action>expressResendPickupCodeAction</action>
+            <action>expressUpdateReturnStatusAction</action>
+            <action>expressUpdateParcelStatusAction</action>
+            <action>expressQueryReminderLogsAction</action>
+        </actions>
+    </businesscode>
+</authorize>
