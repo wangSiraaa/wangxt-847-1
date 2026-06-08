@@ -11,10 +11,12 @@ import nc.vo.express.ParcelVO;
 import nc.vo.express.ReminderLogVO;
 import nc.vo.express.ReminderRuleVO;
 import nc.vo.pub.BusinessException;
+import nc.vo.pub.lang.UFDate;
 import nc.vo.pub.lang.UFDateTime;
 import nccloud.util.PaginationUtil;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
@@ -65,7 +67,9 @@ public class ExpressReminderDAO extends BaseDAO {
                    + "    AND (r2.cond_vip IS NULL OR r2.cond_vip = p.is_vip) "
                    + "    AND (r2.cond_large IS NULL OR r2.cond_large = p.is_large) "
                    + "    AND (r2.cond_remote IS NULL OR r2.cond_remote = p.is_remote) "
-                   + "    AND (r2.cond_area IS NULL OR r2.cond_area = p.area_code) "
+                   + "    AND (r2.area_code IS NULL OR r2.area_code = p.area_code) "
+                   + "    AND (r2.min_weight IS NULL OR p.weight >= r2.min_weight) "
+                   + "    AND (r2.max_weight IS NULL OR p.weight <= r2.max_weight) "
                    + "    AND TRUNC(SYSDATE) - TRUNC(p.inbound_time) >= r2.retention_days "
                    + ") "
                    + "ORDER BY p.inbound_time ASC";

@@ -7,12 +7,14 @@ CREATE TABLE IF NOT EXISTS express_reminder_rule (
     cond_vip            INT,
     cond_large          INT,
     cond_remote         INT,
-    cond_min_weight     DECIMAL(28,8),
-    cond_area_code      VARCHAR(50),
+    min_weight          DECIMAL(28,8),
+    max_weight          DECIMAL(28,8),
+    area_code           VARCHAR(50),
     reminder_type       INT             NOT NULL,
     retention_days      INT             DEFAULT 3,
-    max_reminder_count  INT             DEFAULT 3,
-    priority            INT             DEFAULT 0,
+    reminder_interval   INT             DEFAULT 1,
+    max_reminder_count  INT             DEFAULT 5,
+    priority            INT             DEFAULT 1,
     enabled             INT             DEFAULT 1,
     remark              VARCHAR(500),
     creator             CHAR(20),
@@ -23,5 +25,5 @@ CREATE TABLE IF NOT EXISTS express_reminder_rule (
     ts                  CHAR(19),
     PRIMARY KEY (pk_rule),
     UNIQUE KEY idx_rule_code (pk_org, rule_code, dr),
-    KEY idx_org_priority (pk_org, priority DESC)
+    KEY idx_org_priority (pk_org, enabled, dr, priority DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='催领规则表';

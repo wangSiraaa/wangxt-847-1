@@ -48,15 +48,21 @@ public class ExpressRuleMatcher {
             }
         }
 
-        if (rule.getCond_weight_min() != null && parcel.getWeight() != null) {
-            if (parcel.getWeight().compareTo(new UFDouble(rule.getCond_weight_min())) < 0) {
+        if (rule.getMin_weight() != null && parcel.getWeight() != null) {
+            if (parcel.getWeight().compareTo(rule.getMin_weight()) < 0) {
                 return false;
             }
         }
 
-        if (rule.getCond_area() != null && !rule.getCond_area().isEmpty()) {
+        if (rule.getMax_weight() != null && parcel.getWeight() != null) {
+            if (parcel.getWeight().compareTo(rule.getMax_weight()) > 0) {
+                return false;
+            }
+        }
+
+        if (rule.getArea_code() != null && !rule.getArea_code().isEmpty()) {
             String area = parcel.getArea_code();
-            if (area == null || !area.equals(rule.getCond_area())) {
+            if (area == null || !area.equals(rule.getArea_code())) {
                 return false;
             }
         }
@@ -77,8 +83,9 @@ public class ExpressRuleMatcher {
         return rule.getCond_vip() == null
                 && rule.getCond_large() == null
                 && rule.getCond_remote() == null
-                && rule.getCond_weight_min() == null
-                && (rule.getCond_area() == null || rule.getCond_area().isEmpty());
+                && rule.getMin_weight() == null
+                && rule.getMax_weight() == null
+                && (rule.getArea_code() == null || rule.getArea_code().isEmpty());
     }
 
     public static String getReminderTypeName(int type) {

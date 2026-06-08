@@ -391,9 +391,9 @@ public class ExpressReminderStandaloneTest {
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                Integer condVip = (Integer) rs.getObject("condition_vip");
-                Integer condLarge = (Integer) rs.getObject("condition_large");
-                Integer condRemote = (Integer) rs.getObject("condition_remote");
+                Integer condVip = (Integer) rs.getObject("cond_vip");
+                Integer condLarge = (Integer) rs.getObject("cond_large");
+                Integer condRemote = (Integer) rs.getObject("cond_remote");
                 Double condMinWeight = (Double) rs.getObject("min_weight");
                 Double condMaxWeight = (Double) rs.getObject("max_weight");
                 String condArea = rs.getString("area_code");

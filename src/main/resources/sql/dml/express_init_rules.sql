@@ -17,12 +17,14 @@ USING (
     SELECT 'RULE_VIP_001' AS pk_rule,
            '00000000000000000000' AS pk_group,
            NULL AS pk_org,
+           'VIP_REMIND' AS rule_code,
            'VIP客户优先催领规则' AS rule_name,
            1 AS cond_vip,
            NULL AS cond_large,
            NULL AS cond_remote,
-           NULL AS cond_weight_min,
-           NULL AS cond_area,
+           NULL AS min_weight,
+           NULL AS max_weight,
+           NULL AS area_code,
            2 AS reminder_type,
            1 AS retention_days,
            1 AS reminder_interval,
@@ -40,12 +42,12 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN
-    INSERT (pk_rule, pk_group, pk_org, rule_name, cond_vip, cond_large, cond_remote,
-            cond_weight_min, cond_area, reminder_type, retention_days, reminder_interval,
+    INSERT (pk_rule, pk_group, pk_org, rule_code, rule_name, cond_vip, cond_large, cond_remote,
+            min_weight, max_weight, area_code, reminder_type, retention_days, reminder_interval,
             max_reminder_count, priority, enabled, remark, creator, creationtime,
             modifier, modifiedtime, dr, ts)
-    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
-            s.cond_weight_min, s.cond_area, s.reminder_type, s.retention_days, s.reminder_interval,
+    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
+            s.min_weight, s.max_weight, s.area_code, s.reminder_type, s.retention_days, s.reminder_interval,
             s.max_reminder_count, s.priority, s.enabled, s.remark, s.creator, s.creationtime,
             s.modifier, s.modifiedtime, s.dr, s.ts);
 
@@ -55,12 +57,14 @@ USING (
     SELECT 'RULE_LARGE_001' AS pk_rule,
            '00000000000000000000' AS pk_group,
            NULL AS pk_org,
+           'LARGE_PARCEL' AS rule_code,
            '大件包裹上门催领规则' AS rule_name,
            NULL AS cond_vip,
            1 AS cond_large,
            NULL AS cond_remote,
-           NULL AS cond_weight_min,
-           NULL AS cond_area,
+           NULL AS min_weight,
+           NULL AS max_weight,
+           NULL AS area_code,
            4 AS reminder_type,
            1 AS retention_days,
            1 AS reminder_interval,
@@ -78,12 +82,12 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN
-    INSERT (pk_rule, pk_group, pk_org, rule_name, cond_vip, cond_large, cond_remote,
-            cond_weight_min, cond_area, reminder_type, retention_days, reminder_interval,
+    INSERT (pk_rule, pk_group, pk_org, rule_code, rule_name, cond_vip, cond_large, cond_remote,
+            min_weight, max_weight, area_code, reminder_type, retention_days, reminder_interval,
             max_reminder_count, priority, enabled, remark, creator, creationtime,
             modifier, modifiedtime, dr, ts)
-    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
-            s.cond_weight_min, s.cond_area, s.reminder_type, s.retention_days, s.reminder_interval,
+    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
+            s.min_weight, s.max_weight, s.area_code, s.reminder_type, s.retention_days, s.reminder_interval,
             s.max_reminder_count, s.priority, s.enabled, s.remark, s.creator, s.creationtime,
             s.modifier, s.modifiedtime, s.dr, s.ts);
 
@@ -93,12 +97,14 @@ USING (
     SELECT 'RULE_REMOTE_001' AS pk_rule,
            '00000000000000000000' AS pk_group,
            NULL AS pk_org,
+           'REMOTE_AREA' AS rule_code,
            '偏远地区APP催领规则' AS rule_name,
            NULL AS cond_vip,
            NULL AS cond_large,
            1 AS cond_remote,
-           NULL AS cond_weight_min,
-           NULL AS cond_area,
+           NULL AS min_weight,
+           NULL AS max_weight,
+           NULL AS area_code,
            3 AS reminder_type,
            2 AS retention_days,
            2 AS reminder_interval,
@@ -116,27 +122,29 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN
-    INSERT (pk_rule, pk_group, pk_org, rule_name, cond_vip, cond_large, cond_remote,
-            cond_weight_min, cond_area, reminder_type, retention_days, reminder_interval,
+    INSERT (pk_rule, pk_group, pk_org, rule_code, rule_name, cond_vip, cond_large, cond_remote,
+            min_weight, max_weight, area_code, reminder_type, retention_days, reminder_interval,
             max_reminder_count, priority, enabled, remark, creator, creationtime,
             modifier, modifiedtime, dr, ts)
-    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
-            s.cond_weight_min, s.cond_area, s.reminder_type, s.retention_days, s.reminder_interval,
+    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
+            s.min_weight, s.max_weight, s.area_code, s.reminder_type, s.retention_days, s.reminder_interval,
             s.max_reminder_count, s.priority, s.enabled, s.remark, s.creator, s.creationtime,
             s.modifier, s.modifiedtime, s.dr, s.ts);
 
 -- 规则4：重物规则 - 重量超过10kg的包裹，滞留1天后电话催领
 MERGE INTO express_reminder_rule t
 USING (
-    SELECT 'RULE_WEIGHT_001' AS pk_rule,
+    SELECT 'RULE_HEAVY_001' AS pk_rule,
            '00000000000000000000' AS pk_group,
            NULL AS pk_org,
+           'HEAVY_WEIGHT' AS rule_code,
            '重物包裹优先催领规则' AS rule_name,
            NULL AS cond_vip,
            NULL AS cond_large,
            NULL AS cond_remote,
-           10 AS cond_weight_min,
-           NULL AS cond_area,
+           10 AS min_weight,
+           NULL AS max_weight,
+           NULL AS area_code,
            2 AS reminder_type,
            1 AS retention_days,
            1 AS reminder_interval,
@@ -154,12 +162,12 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN
-    INSERT (pk_rule, pk_group, pk_org, rule_name, cond_vip, cond_large, cond_remote,
-            cond_weight_min, cond_area, reminder_type, retention_days, reminder_interval,
+    INSERT (pk_rule, pk_group, pk_org, rule_code, rule_name, cond_vip, cond_large, cond_remote,
+            min_weight, max_weight, area_code, reminder_type, retention_days, reminder_interval,
             max_reminder_count, priority, enabled, remark, creator, creationtime,
             modifier, modifiedtime, dr, ts)
-    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
-            s.cond_weight_min, s.cond_area, s.reminder_type, s.retention_days, s.reminder_interval,
+    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
+            s.min_weight, s.max_weight, s.area_code, s.reminder_type, s.retention_days, s.reminder_interval,
             s.max_reminder_count, s.priority, s.enabled, s.remark, s.creator, s.creationtime,
             s.modifier, s.modifiedtime, s.dr, s.ts);
 
@@ -169,12 +177,14 @@ USING (
     SELECT 'RULE_AREA_A01' AS pk_rule,
            '00000000000000000000' AS pk_group,
            NULL AS pk_org,
+           'AREA_A01' AS rule_code,
            '片区A01专属催领规则' AS rule_name,
            NULL AS cond_vip,
            NULL AS cond_large,
            NULL AS cond_remote,
-           NULL AS cond_weight_min,
-           'A01' AS cond_area,
+           NULL AS min_weight,
+           NULL AS max_weight,
+           'A01' AS area_code,
            1 AS reminder_type,
            2 AS retention_days,
            1 AS reminder_interval,
@@ -192,12 +202,12 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN
-    INSERT (pk_rule, pk_group, pk_org, rule_name, cond_vip, cond_large, cond_remote,
-            cond_weight_min, cond_area, reminder_type, retention_days, reminder_interval,
+    INSERT (pk_rule, pk_group, pk_org, rule_code, rule_name, cond_vip, cond_large, cond_remote,
+            min_weight, max_weight, area_code, reminder_type, retention_days, reminder_interval,
             max_reminder_count, priority, enabled, remark, creator, creationtime,
             modifier, modifiedtime, dr, ts)
-    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
-            s.cond_weight_min, s.cond_area, s.reminder_type, s.retention_days, s.reminder_interval,
+    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
+            s.min_weight, s.max_weight, s.area_code, s.reminder_type, s.retention_days, s.reminder_interval,
             s.max_reminder_count, s.priority, s.enabled, s.remark, s.creator, s.creationtime,
             s.modifier, s.modifiedtime, s.dr, s.ts);
 
@@ -207,12 +217,14 @@ USING (
     SELECT 'RULE_DEFAULT_001' AS pk_rule,
            '00000000000000000000' AS pk_group,
            NULL AS pk_org,
+           'DEFAULT_REMIND' AS rule_code,
            '默认短信催领规则' AS rule_name,
            NULL AS cond_vip,
            NULL AS cond_large,
            NULL AS cond_remote,
-           NULL AS cond_weight_min,
-           NULL AS cond_area,
+           NULL AS min_weight,
+           NULL AS max_weight,
+           NULL AS area_code,
            1 AS reminder_type,
            3 AS retention_days,
            1 AS reminder_interval,
@@ -230,19 +242,19 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN
-    INSERT (pk_rule, pk_group, pk_org, rule_name, cond_vip, cond_large, cond_remote,
-            cond_weight_min, cond_area, reminder_type, retention_days, reminder_interval,
+    INSERT (pk_rule, pk_group, pk_org, rule_code, rule_name, cond_vip, cond_large, cond_remote,
+            min_weight, max_weight, area_code, reminder_type, retention_days, reminder_interval,
             max_reminder_count, priority, enabled, remark, creator, creationtime,
             modifier, modifiedtime, dr, ts)
-    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
-            s.cond_weight_min, s.cond_area, s.reminder_type, s.retention_days, s.reminder_interval,
+    VALUES (s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.cond_vip, s.cond_large, s.cond_remote,
+            s.min_weight, s.max_weight, s.area_code, s.reminder_type, s.retention_days, s.reminder_interval,
             s.max_reminder_count, s.priority, s.enabled, s.remark, s.creator, s.creationtime,
             s.modifier, s.modifiedtime, s.dr, s.ts);
 
 COMMIT;
 
 -- 查询已初始化的规则
-SELECT pk_rule, rule_name, cond_vip, cond_large, cond_remote, cond_weight_min, cond_area,
+SELECT pk_rule, rule_code, rule_name, cond_vip, cond_large, cond_remote, min_weight, max_weight, area_code,
        reminder_type, retention_days, priority, enabled
 FROM express_reminder_rule
 WHERE dr = 0

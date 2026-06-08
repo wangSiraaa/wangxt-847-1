@@ -2,6 +2,7 @@ package nc.vo.express;
 
 import nc.vo.pub.SuperVO;
 import nc.vo.pub.lang.UFDateTime;
+import nc.vo.pub.lang.UFDouble;
 import nc.vo.pubapp.pattern.model.meta.entity.vo.IVOMeta;
 import nc.vo.pubapp.pattern.model.meta.entity.vo.VOMetaFactory;
 
@@ -10,13 +11,14 @@ public class ReminderRuleVO extends SuperVO {
 
     public static final String TABLE_NAME = "express_reminder_rule";
     public static final String PK_RULE = "pk_rule";
-    public static final String RULE_NAME = "rule_name";
     public static final String RULE_CODE = "rule_code";
+    public static final String RULE_NAME = "rule_name";
     public static final String COND_VIP = "cond_vip";
     public static final String COND_LARGE = "cond_large";
     public static final String COND_REMOTE = "cond_remote";
-    public static final String COND_WEIGHT_MIN = "cond_weight_min";
-    public static final String COND_AREA = "cond_area";
+    public static final String MIN_WEIGHT = "min_weight";
+    public static final String MAX_WEIGHT = "max_weight";
+    public static final String AREA_CODE = "area_code";
     public static final String REMINDER_TYPE = "reminder_type";
     public static final String RETENTION_DAYS = "retention_days";
     public static final String REMINDER_INTERVAL = "reminder_interval";
@@ -31,13 +33,14 @@ public class ReminderRuleVO extends SuperVO {
     public static final int TYPE_DOOR = 4;
 
     private String pk_rule;
-    private String rule_name;
     private String rule_code;
+    private String rule_name;
     private Integer cond_vip;
     private Integer cond_large;
     private Integer cond_remote;
-    private Integer cond_weight_min;
-    private String cond_area;
+    private UFDouble min_weight;
+    private UFDouble max_weight;
+    private String area_code;
     private Integer reminder_type;
     private Integer retention_days;
     private Integer reminder_interval;
@@ -83,20 +86,20 @@ public class ReminderRuleVO extends SuperVO {
         this.pk_rule = pk_rule;
     }
 
-    public String getRule_name() {
-        return rule_name;
-    }
-
-    public void setRule_name(String rule_name) {
-        this.rule_name = rule_name;
-    }
-
     public String getRule_code() {
         return rule_code;
     }
 
     public void setRule_code(String rule_code) {
         this.rule_code = rule_code;
+    }
+
+    public String getRule_name() {
+        return rule_name;
+    }
+
+    public void setRule_name(String rule_name) {
+        this.rule_name = rule_name;
     }
 
     public Integer getCond_vip() {
@@ -123,20 +126,28 @@ public class ReminderRuleVO extends SuperVO {
         this.cond_remote = cond_remote;
     }
 
-    public Integer getCond_weight_min() {
-        return cond_weight_min;
+    public UFDouble getMin_weight() {
+        return min_weight;
     }
 
-    public void setCond_weight_min(Integer cond_weight_min) {
-        this.cond_weight_min = cond_weight_min;
+    public void setMin_weight(UFDouble min_weight) {
+        this.min_weight = min_weight;
     }
 
-    public String getCond_area() {
-        return cond_area;
+    public UFDouble getMax_weight() {
+        return max_weight;
     }
 
-    public void setCond_area(String cond_area) {
-        this.cond_area = cond_area;
+    public void setMax_weight(UFDouble max_weight) {
+        this.max_weight = max_weight;
+    }
+
+    public String getArea_code() {
+        return area_code;
+    }
+
+    public void setArea_code(String area_code) {
+        this.area_code = area_code;
     }
 
     public Integer getReminder_type() {

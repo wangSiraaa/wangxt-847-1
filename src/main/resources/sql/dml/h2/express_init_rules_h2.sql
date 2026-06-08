@@ -13,19 +13,19 @@ USING (
         '0001' AS pk_org,
         'VIP_REMIND' AS rule_code,
         'VIP客户催领' AS rule_name,
-        'VIP客户滞留件优先电话催领' AS rule_desc,
         100 AS priority,
         1 AS enabled,
-        1 AS condition_vip,
-        CAST(NULL AS INT) AS condition_large,
-        CAST(NULL AS INT) AS condition_remote,
+        1 AS cond_vip,
+        CAST(NULL AS INT) AS cond_large,
+        CAST(NULL AS INT) AS cond_remote,
         CAST(NULL AS DECIMAL(28,8)) AS min_weight,
         CAST(NULL AS DECIMAL(28,8)) AS max_weight,
         CAST(NULL AS VARCHAR(50)) AS area_code,
         2 AS reminder_type,
         1 AS retention_days,
-        '【VIP服务】尊敬的{receiver_name}，您的包裹{express_no}已到达驿站，请尽快凭取件码{pickup_code}取件，VIP专线：400-888-8888' AS reminder_content,
-        '初始化' AS remark,
+        1 AS reminder_interval,
+        3 AS max_reminder_count,
+        'VIP客户滞留件优先电话催领' AS remark,
         'system' AS creator,
         CURRENT_TIMESTAMP AS creationtime,
         'system' AS modifier,
@@ -35,14 +35,14 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN INSERT (
-    pk_rule, pk_group, pk_org, rule_code, rule_name, rule_desc, priority, enabled,
-    condition_vip, condition_large, condition_remote, min_weight, max_weight, area_code,
-    reminder_type, retention_days, reminder_content, remark,
+    pk_rule, pk_group, pk_org, rule_code, rule_name, priority, enabled,
+    cond_vip, cond_large, cond_remote, min_weight, max_weight, area_code,
+    reminder_type, retention_days, reminder_interval, max_reminder_count, remark,
     creator, creationtime, modifier, modifiedtime, dr, ts
 ) VALUES (
-    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.rule_desc, s.priority, s.enabled,
-    s.condition_vip, s.condition_large, s.condition_remote, s.min_weight, s.max_weight, s.area_code,
-    s.reminder_type, s.retention_days, s.reminder_content, s.remark,
+    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.priority, s.enabled,
+    s.cond_vip, s.cond_large, s.cond_remote, s.min_weight, s.max_weight, s.area_code,
+    s.reminder_type, s.retention_days, s.reminder_interval, s.max_reminder_count, s.remark,
     s.creator, s.creationtime, s.modifier, s.modifiedtime, s.dr, s.ts
 );
 
@@ -55,19 +55,19 @@ USING (
         '0001' AS pk_org,
         'LARGE_PARCEL' AS rule_code,
         '大件包裹催领' AS rule_name,
-        '大件包裹安排上门通知' AS rule_desc,
         90 AS priority,
         1 AS enabled,
-        CAST(NULL AS INT) AS condition_vip,
-        1 AS condition_large,
-        CAST(NULL AS INT) AS condition_remote,
+        CAST(NULL AS INT) AS cond_vip,
+        1 AS cond_large,
+        CAST(NULL AS INT) AS cond_remote,
         CAST(NULL AS DECIMAL(28,8)) AS min_weight,
         CAST(NULL AS DECIMAL(28,8)) AS max_weight,
         CAST(NULL AS VARCHAR(50)) AS area_code,
         4 AS reminder_type,
-        2 AS retention_days,
-        '【大件提醒】尊敬的{receiver_name}，您的大件包裹{express_no}已到达，我们将安排送货上门，请保持电话畅通' AS reminder_content,
-        '初始化' AS remark,
+        1 AS retention_days,
+        1 AS reminder_interval,
+        3 AS max_reminder_count,
+        '大件包裹安排上门通知' AS remark,
         'system' AS creator,
         CURRENT_TIMESTAMP AS creationtime,
         'system' AS modifier,
@@ -77,14 +77,14 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN INSERT (
-    pk_rule, pk_group, pk_org, rule_code, rule_name, rule_desc, priority, enabled,
-    condition_vip, condition_large, condition_remote, min_weight, max_weight, area_code,
-    reminder_type, retention_days, reminder_content, remark,
+    pk_rule, pk_group, pk_org, rule_code, rule_name, priority, enabled,
+    cond_vip, cond_large, cond_remote, min_weight, max_weight, area_code,
+    reminder_type, retention_days, reminder_interval, max_reminder_count, remark,
     creator, creationtime, modifier, modifiedtime, dr, ts
 ) VALUES (
-    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.rule_desc, s.priority, s.enabled,
-    s.condition_vip, s.condition_large, s.condition_remote, s.min_weight, s.max_weight, s.area_code,
-    s.reminder_type, s.retention_days, s.reminder_content, s.remark,
+    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.priority, s.enabled,
+    s.cond_vip, s.cond_large, s.cond_remote, s.min_weight, s.max_weight, s.area_code,
+    s.reminder_type, s.retention_days, s.reminder_interval, s.max_reminder_count, s.remark,
     s.creator, s.creationtime, s.modifier, s.modifiedtime, s.dr, s.ts
 );
 
@@ -97,19 +97,19 @@ USING (
         '0001' AS pk_org,
         'REMOTE_AREA' AS rule_code,
         '偏远地区催领' AS rule_name,
-        '偏远地区使用APP推送通知' AS rule_desc,
         80 AS priority,
         1 AS enabled,
-        CAST(NULL AS INT) AS condition_vip,
-        CAST(NULL AS INT) AS condition_large,
-        1 AS condition_remote,
+        CAST(NULL AS INT) AS cond_vip,
+        CAST(NULL AS INT) AS cond_large,
+        1 AS cond_remote,
         CAST(NULL AS DECIMAL(28,8)) AS min_weight,
         CAST(NULL AS DECIMAL(28,8)) AS max_weight,
         CAST(NULL AS VARCHAR(50)) AS area_code,
         3 AS reminder_type,
-        3 AS retention_days,
-        '【偏远提醒】尊敬的{receiver_name}，您的包裹{express_no}已到达驿站，由于您所在区域较远，请尽快安排取件' AS reminder_content,
-        '初始化' AS remark,
+        2 AS retention_days,
+        2 AS reminder_interval,
+        4 AS max_reminder_count,
+        '偏远地区使用APP推送通知' AS remark,
         'system' AS creator,
         CURRENT_TIMESTAMP AS creationtime,
         'system' AS modifier,
@@ -119,14 +119,14 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN INSERT (
-    pk_rule, pk_group, pk_org, rule_code, rule_name, rule_desc, priority, enabled,
-    condition_vip, condition_large, condition_remote, min_weight, max_weight, area_code,
-    reminder_type, retention_days, reminder_content, remark,
+    pk_rule, pk_group, pk_org, rule_code, rule_name, priority, enabled,
+    cond_vip, cond_large, cond_remote, min_weight, max_weight, area_code,
+    reminder_type, retention_days, reminder_interval, max_reminder_count, remark,
     creator, creationtime, modifier, modifiedtime, dr, ts
 ) VALUES (
-    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.rule_desc, s.priority, s.enabled,
-    s.condition_vip, s.condition_large, s.condition_remote, s.min_weight, s.max_weight, s.area_code,
-    s.reminder_type, s.retention_days, s.reminder_content, s.remark,
+    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.priority, s.enabled,
+    s.cond_vip, s.cond_large, s.cond_remote, s.min_weight, s.max_weight, s.area_code,
+    s.reminder_type, s.retention_days, s.reminder_interval, s.max_reminder_count, s.remark,
     s.creator, s.creationtime, s.modifier, s.modifiedtime, s.dr, s.ts
 );
 
@@ -139,19 +139,19 @@ USING (
         '0001' AS pk_org,
         'HEAVY_WEIGHT' AS rule_code,
         '重物包裹催领' AS rule_name,
-        '超过10kg的包裹电话通知' AS rule_desc,
         70 AS priority,
         1 AS enabled,
-        CAST(NULL AS INT) AS condition_vip,
-        CAST(NULL AS INT) AS condition_large,
-        CAST(NULL AS INT) AS condition_remote,
+        CAST(NULL AS INT) AS cond_vip,
+        CAST(NULL AS INT) AS cond_large,
+        CAST(NULL AS INT) AS cond_remote,
         10.0 AS min_weight,
         CAST(NULL AS DECIMAL(28,8)) AS max_weight,
         CAST(NULL AS VARCHAR(50)) AS area_code,
         2 AS reminder_type,
-        2 AS retention_days,
-        '【重物提醒】尊敬的{receiver_name}，您的包裹{express_no}重达{weight}kg，建议安排搬运工具前来取件' AS reminder_content,
-        '初始化' AS remark,
+        1 AS retention_days,
+        1 AS reminder_interval,
+        3 AS max_reminder_count,
+        '超过10kg的包裹电话通知' AS remark,
         'system' AS creator,
         CURRENT_TIMESTAMP AS creationtime,
         'system' AS modifier,
@@ -161,14 +161,14 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN INSERT (
-    pk_rule, pk_group, pk_org, rule_code, rule_name, rule_desc, priority, enabled,
-    condition_vip, condition_large, condition_remote, min_weight, max_weight, area_code,
-    reminder_type, retention_days, reminder_content, remark,
+    pk_rule, pk_group, pk_org, rule_code, rule_name, priority, enabled,
+    cond_vip, cond_large, cond_remote, min_weight, max_weight, area_code,
+    reminder_type, retention_days, reminder_interval, max_reminder_count, remark,
     creator, creationtime, modifier, modifiedtime, dr, ts
 ) VALUES (
-    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.rule_desc, s.priority, s.enabled,
-    s.condition_vip, s.condition_large, s.condition_remote, s.min_weight, s.max_weight, s.area_code,
-    s.reminder_type, s.retention_days, s.reminder_content, s.remark,
+    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.priority, s.enabled,
+    s.cond_vip, s.cond_large, s.cond_remote, s.min_weight, s.max_weight, s.area_code,
+    s.reminder_type, s.retention_days, s.reminder_interval, s.max_reminder_count, s.remark,
     s.creator, s.creationtime, s.modifier, s.modifiedtime, s.dr, s.ts
 );
 
@@ -181,19 +181,19 @@ USING (
         '0001' AS pk_org,
         'AREA_A01' AS rule_code,
         'A01片区催领' AS rule_name,
-        'A01片区使用短信催领' AS rule_desc,
         60 AS priority,
         1 AS enabled,
-        CAST(NULL AS INT) AS condition_vip,
-        CAST(NULL AS INT) AS condition_large,
-        CAST(NULL AS INT) AS condition_remote,
+        CAST(NULL AS INT) AS cond_vip,
+        CAST(NULL AS INT) AS cond_large,
+        CAST(NULL AS INT) AS cond_remote,
         CAST(NULL AS DECIMAL(28,8)) AS min_weight,
         CAST(NULL AS DECIMAL(28,8)) AS max_weight,
         'A01' AS area_code,
         1 AS reminder_type,
-        3 AS retention_days,
-        '【A01片区】尊敬的{receiver_name}，您的包裹{express_no}已到达A01驿站，取件码{pickup_code}，请3日内取件' AS reminder_content,
-        '初始化' AS remark,
+        2 AS retention_days,
+        1 AS reminder_interval,
+        5 AS max_reminder_count,
+        'A01片区使用短信催领' AS remark,
         'system' AS creator,
         CURRENT_TIMESTAMP AS creationtime,
         'system' AS modifier,
@@ -203,14 +203,14 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN INSERT (
-    pk_rule, pk_group, pk_org, rule_code, rule_name, rule_desc, priority, enabled,
-    condition_vip, condition_large, condition_remote, min_weight, max_weight, area_code,
-    reminder_type, retention_days, reminder_content, remark,
+    pk_rule, pk_group, pk_org, rule_code, rule_name, priority, enabled,
+    cond_vip, cond_large, cond_remote, min_weight, max_weight, area_code,
+    reminder_type, retention_days, reminder_interval, max_reminder_count, remark,
     creator, creationtime, modifier, modifiedtime, dr, ts
 ) VALUES (
-    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.rule_desc, s.priority, s.enabled,
-    s.condition_vip, s.condition_large, s.condition_remote, s.min_weight, s.max_weight, s.area_code,
-    s.reminder_type, s.retention_days, s.reminder_content, s.remark,
+    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.priority, s.enabled,
+    s.cond_vip, s.cond_large, s.cond_remote, s.min_weight, s.max_weight, s.area_code,
+    s.reminder_type, s.retention_days, s.reminder_interval, s.max_reminder_count, s.remark,
     s.creator, s.creationtime, s.modifier, s.modifiedtime, s.dr, s.ts
 );
 
@@ -223,19 +223,19 @@ USING (
         '0001' AS pk_org,
         'DEFAULT_REMIND' AS rule_code,
         '默认催领规则' AS rule_name,
-        '普通包裹默认短信催领' AS rule_desc,
         1 AS priority,
         1 AS enabled,
-        CAST(NULL AS INT) AS condition_vip,
-        CAST(NULL AS INT) AS condition_large,
-        CAST(NULL AS INT) AS condition_remote,
+        CAST(NULL AS INT) AS cond_vip,
+        CAST(NULL AS INT) AS cond_large,
+        CAST(NULL AS INT) AS cond_remote,
         CAST(NULL AS DECIMAL(28,8)) AS min_weight,
         CAST(NULL AS DECIMAL(28,8)) AS max_weight,
         CAST(NULL AS VARCHAR(50)) AS area_code,
         1 AS reminder_type,
         3 AS retention_days,
-        '【取件提醒】尊敬的{receiver_name}，您的包裹{express_no}已到达驿站，取件码{pickup_code}，请及时取件' AS reminder_content,
-        '初始化' AS remark,
+        1 AS reminder_interval,
+        5 AS max_reminder_count,
+        '普通包裹默认短信催领' AS remark,
         'system' AS creator,
         CURRENT_TIMESTAMP AS creationtime,
         'system' AS modifier,
@@ -245,13 +245,13 @@ USING (
 ) s
 ON (t.pk_rule = s.pk_rule)
 WHEN NOT MATCHED THEN INSERT (
-    pk_rule, pk_group, pk_org, rule_code, rule_name, rule_desc, priority, enabled,
-    condition_vip, condition_large, condition_remote, min_weight, max_weight, area_code,
-    reminder_type, retention_days, reminder_content, remark,
+    pk_rule, pk_group, pk_org, rule_code, rule_name, priority, enabled,
+    cond_vip, cond_large, cond_remote, min_weight, max_weight, area_code,
+    reminder_type, retention_days, reminder_interval, max_reminder_count, remark,
     creator, creationtime, modifier, modifiedtime, dr, ts
 ) VALUES (
-    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.rule_desc, s.priority, s.enabled,
-    s.condition_vip, s.condition_large, s.condition_remote, s.min_weight, s.max_weight, s.area_code,
-    s.reminder_type, s.retention_days, s.reminder_content, s.remark,
+    s.pk_rule, s.pk_group, s.pk_org, s.rule_code, s.rule_name, s.priority, s.enabled,
+    s.cond_vip, s.cond_large, s.cond_remote, s.min_weight, s.max_weight, s.area_code,
+    s.reminder_type, s.retention_days, s.reminder_interval, s.max_reminder_count, s.remark,
     s.creator, s.creationtime, s.modifier, s.modifiedtime, s.dr, s.ts
 );
