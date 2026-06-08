@@ -6,11 +6,13 @@ import nc.express.rule.ExpressRuleMatcher;
 import nc.impl.pubapp.pattern.database.SqlBuilderUtil;
 import nc.jdbc.framework.processor.BeanListProcessor;
 import nc.jdbc.framework.processor.ColumnProcessor;
+import nc.jdbc.framework.SQLParameter;
 import nc.vo.express.ParcelVO;
 import nc.vo.express.ReminderLogVO;
 import nc.vo.express.ReminderRuleVO;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.lang.UFDateTime;
+import nccloud.util.PaginationUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -123,41 +125,43 @@ public class ExpressReminderDAO extends BaseDAO {
                                                            UFDateTime startTime, UFDateTime endTime,
                                                            int pageStart, int pageSize) throws DAOException {
         StringBuilder sql = new StringBuilder();
-        List<Object> paramList = new ArrayList<>();
+        SQLParameter sqlParam = new SQLParameter();
 
         sql.append("SELECT l.* FROM express_reminder_log l ");
-        sql.append("INNER JOIN express_parcel p ON l.pk_parcel = p.pk_parcel ");
-        sql.append("WHERE l.dr = 0 AND p.dr = 0 ");
+        sql.append("WHERE l.dr = 0 ");
         sql.append("AND l.pk_org = ? ");
-        paramList.add(pkOrg);
+        sqlParam.addParam(pkOrg);
 
         if (areaCode != null && !areaCode.isEmpty()) {
-            sql.append("AND p.area_code = ? ");
-            paramList.add(areaCode);
+            sql.append("AND l.area_code = ? ");
+            sqlParam.addParam(areaCode);
         }
         if (reminderType != null) {
             sql.append("AND l.reminder_type = ? ");
-            paramList.add(reminderType);
+            sqlParam.addParam(reminderType);
         }
         if (status != null) {
             sql.append("AND l.reminder_status = ? ");
-            paramList.add(status);
+            sqlParam.addParam(status);
         }
         if (startTime != null) {
             sql.append("AND l.reminder_time >= ? ");
-            paramList.add(startTime);
+            sqlParam.addParam(startTime);
         }
         if (endTime != null) {
             sql.append("AND l.reminder_time <= ? ");
-            paramList.add(endTime);
+            sqlParam.addParam(endTime);
         }
 
-        sql.append("ORDER BY l.reminder_time DESC ");
-        sql.append("LIMIT ? OFFSET ?");
-        paramList.add(pageSize);
-        paramList.add(pageStart);
+        sql.append("ORDER BY l.reminder_time DESC, l.pk_log DESC");
 
-        return (List<ReminderLogVO>) this.executeQuery(sql.toString(), paramList.toArray(),
+        int offset = Math.max(0, pageStart);
+        int safePageSize = Math.max(1, Math.min(pageSize, 500));
+
+        String paginationSql = PaginationUtil.generatePaginationSql(
+                sql.toString(), offset, safePageSize, sqlParam);
+
+        return (List<ReminderLogVO>) this.executeQuery(paginationSql, sqlParam,
                 new BeanListProcessor(ReminderLogVO.class));
     }
 
@@ -165,36 +169,35 @@ public class ExpressReminderDAO extends BaseDAO {
                                             Integer reminderType, Integer status,
                                             UFDateTime startTime, UFDateTime endTime) throws DAOException {
         StringBuilder sql = new StringBuilder();
-        List<Object> paramList = new ArrayList<>();
+        SQLParameter sqlParam = new SQLParameter();
 
         sql.append("SELECT COUNT(1) FROM express_reminder_log l ");
-        sql.append("INNER JOIN express_parcel p ON l.pk_parcel = p.pk_parcel ");
-        sql.append("WHERE l.dr = 0 AND p.dr = 0 ");
+        sql.append("WHERE l.dr = 0 ");
         sql.append("AND l.pk_org = ? ");
-        paramList.add(pkOrg);
+        sqlParam.addParam(pkOrg);
 
         if (areaCode != null && !areaCode.isEmpty()) {
-            sql.append("AND p.area_code = ? ");
-            paramList.add(areaCode);
+            sql.append("AND l.area_code = ? ");
+            sqlParam.addParam(areaCode);
         }
         if (reminderType != null) {
             sql.append("AND l.reminder_type = ? ");
-            paramList.add(reminderType);
+            sqlParam.addParam(reminderType);
         }
         if (status != null) {
             sql.append("AND l.reminder_status = ? ");
-            paramList.add(status);
+            sqlParam.addParam(status);
         }
         if (startTime != null) {
             sql.append("AND l.reminder_time >= ? ");
-            paramList.add(startTime);
+            sqlParam.addParam(startTime);
         }
         if (endTime != null) {
             sql.append("AND l.reminder_time <= ? ");
-            paramList.add(endTime);
+            sqlParam.addParam(endTime);
         }
 
-        Object result = this.executeQuery(sql.toString(), paramList.toArray(),
+        Object result = this.executeQuery(sql.toString(), sqlParam,
                 new ColumnProcessor());
         return result != null ? ((Number) result).intValue() : 0;
     }

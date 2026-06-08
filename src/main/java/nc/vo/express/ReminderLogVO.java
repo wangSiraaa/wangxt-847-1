@@ -20,6 +20,7 @@ public class ReminderLogVO extends SuperVO {
     public static final String FAIL_REASON = "fail_reason";
     public static final String REMINDER_COUNT = "reminder_count";
     public static final String OPERATOR = "operator";
+    public static final String AREA_CODE = "area_code";
     public static final String REMARK = "remark";
 
     public static final int STATUS_PENDING = 0;
@@ -38,6 +39,7 @@ public class ReminderLogVO extends SuperVO {
     private String fail_reason;
     private Integer reminder_count;
     private String operator;
+    private String area_code;
     private String remark;
 
     private String pk_group;
@@ -155,6 +157,14 @@ public class ReminderLogVO extends SuperVO {
 
     public void setOperator(String operator) {
         this.operator = operator;
+    }
+
+    public String getArea_code() {
+        return area_code;
+    }
+
+    public void setArea_code(String area_code) {
+        this.area_code = area_code;
     }
 
     public String getRemark() {

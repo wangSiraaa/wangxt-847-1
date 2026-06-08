@@ -156,6 +156,7 @@ public class ExpressReminderServiceImpl implements IExpressReminderService {
         log.setPickup_code(parcel.getPickup_code());
         log.setReminder_count(currentCount + 1);
         log.setOperator(userId);
+        log.setArea_code(parcel.getArea_code());
         log.setReminder_content(ExpressUtils.generateReminderContent(
                 parcel.getReceiver_name(),
                 parcel.getPickup_code(),
@@ -235,6 +236,7 @@ public class ExpressReminderServiceImpl implements IExpressReminderService {
             log.setPickup_code(newPickupCode);
             log.setReminder_count(dao.getReminderCountForParcel(pkParcel) + 1);
             log.setOperator(userId);
+            log.setArea_code(parcel.getArea_code());
             log.setRemark("取件码过期重发");
             log.setReminder_content(ExpressUtils.generatePickupCodeResendContent(
                     parcel.getReceiver_name(),
