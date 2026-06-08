@@ -10,7 +10,10 @@ import nccloud.framework.web.container.ClientInfo;
 import nccloud.framework.web.json.JsonFactory;
 import nc.itf.express.IExpressReminderService;
 import nc.vo.express.ReminderLogVO;
+import nc.vo.express.ReminderResultVO;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,15 +37,35 @@ public class GenerateReminderAction implements ICommonAction {
             }
 
             IExpressReminderService service = ServiceLocator.find(IExpressReminderService.class);
-            List<ReminderLogVO> logs;
+            List<ReminderResultVO> results;
 
             if (pkParcels != null && pkParcels.length > 0) {
-                logs = service.generateReminders(pkOrg, pkParcels);
+                results = service.generateRemindersWithVersion(pkOrg, pkParcels);
             } else {
-                logs = service.generateOverdueReminders(pkOrg);
+                results = service.generateOverdueRemindersWithVersion(pkOrg);
             }
 
-            return buildSuccess(logs);
+            List<ReminderLogVO> logs = new ArrayList<>();
+            List<Map<String, Object>> versionCompareList = new ArrayList<>();
+            for (ReminderResultVO result : results) {
+                logs.add(result.getReminderLog());
+                Map<String, Object> compareInfo = new HashMap<>();
+                compareInfo.put("pk_log", result.getReminderLog().getPk_log());
+                compareInfo.put("pk_parcel", result.getReminderLog().getPk_parcel());
+                compareInfo.put("compareCount", result.getVersionCompareList().size());
+                compareInfo.put("changedCount", result.getChangedFieldCount());
+                compareInfo.put("unchangedCount", result.getUnchangedFieldCount());
+                compareInfo.put("newFieldCount", result.getNewFieldCount());
+                compareInfo.put("summary", result.getVersionCompareSummary());
+                versionCompareList.add(compareInfo);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("logs", logs);
+            response.put("versionCompareSummary", versionCompareList);
+            response.put("total", logs.size());
+
+            return buildSuccess(response);
         } catch (Exception e) {
             ExceptionUtils.wrapException(e);
             return buildError(e.getMessage());

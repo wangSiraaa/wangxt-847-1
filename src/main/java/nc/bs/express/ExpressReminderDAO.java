@@ -7,6 +7,7 @@ import nc.impl.pubapp.pattern.database.SqlBuilderUtil;
 import nc.jdbc.framework.processor.BeanListProcessor;
 import nc.jdbc.framework.processor.ColumnProcessor;
 import nc.jdbc.framework.SQLParameter;
+import nc.vo.express.ParcelVersionCompareVO;
 import nc.vo.express.ParcelVO;
 import nc.vo.express.ReminderLogVO;
 import nc.vo.express.ReminderRuleVO;
@@ -227,5 +228,111 @@ public class ExpressReminderDAO extends BaseDAO {
             throw new BusinessException("包裹不存在");
         }
         return vo.getReturn_processing() != null && vo.getReturn_processing() == 1;
+    }
+
+    public ParcelVersionCompareVO insertVersionCompare(ParcelVersionCompareVO vo) throws DAOException {
+        vo.setStatus(nc.vo.pub.VOStatus.NEW);
+        return (ParcelVersionCompareVO) this.insertVO(vo);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ParcelVersionCompareVO> insertVersionCompareBatch(List<ParcelVersionCompareVO> vos) throws DAOException {
+        if (vos == null || vos.isEmpty()) {
+            return vos;
+        }
+        for (ParcelVersionCompareVO vo : vos) {
+            vo.setStatus(nc.vo.pub.VOStatus.NEW);
+        }
+        this.insertVOArray(vos.toArray(new ParcelVersionCompareVO[0]));
+        return vos;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ParcelVersionCompareVO> findVersionCompareByParcel(String pkParcel) throws DAOException {
+        String condition = "pk_parcel = ? AND dr = 0 ORDER BY compare_time DESC, pk_compare DESC";
+        Object[] params = new Object[]{pkParcel};
+        return (List<ParcelVersionCompareVO>) this.retrieveByClause(ParcelVersionCompareVO.class, condition, params);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ParcelVersionCompareVO> findVersionCompareByLog(String pkLog) throws DAOException {
+        String condition = "pk_log = ? AND dr = 0 ORDER BY compare_time DESC, pk_compare DESC";
+        Object[] params = new Object[]{pkLog};
+        return (List<ParcelVersionCompareVO>) this.retrieveByClause(ParcelVersionCompareVO.class, condition, params);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ParcelVersionCompareVO> findVersionCompareByCondition(String pkOrg, String pkParcel,
+                                                                       Integer compareResult,
+                                                                       UFDateTime startTime, UFDateTime endTime,
+                                                                       int pageStart, int pageSize) throws DAOException {
+        StringBuilder sql = new StringBuilder();
+        SQLParameter sqlParam = new SQLParameter();
+
+        sql.append("SELECT v.* FROM express_parcel_version_compare v ");
+        sql.append("WHERE v.dr = 0 ");
+        sql.append("AND v.pk_org = ? ");
+        sqlParam.addParam(pkOrg);
+
+        if (pkParcel != null && !pkParcel.isEmpty()) {
+            sql.append("AND v.pk_parcel = ? ");
+            sqlParam.addParam(pkParcel);
+        }
+        if (compareResult != null) {
+            sql.append("AND v.compare_result = ? ");
+            sqlParam.addParam(compareResult);
+        }
+        if (startTime != null) {
+            sql.append("AND v.compare_time >= ? ");
+            sqlParam.addParam(startTime);
+        }
+        if (endTime != null) {
+            sql.append("AND v.compare_time <= ? ");
+            sqlParam.addParam(endTime);
+        }
+
+        sql.append("ORDER BY v.compare_time DESC, v.pk_compare DESC");
+
+        int offset = Math.max(0, pageStart);
+        int safePageSize = Math.max(1, Math.min(pageSize, 500));
+
+        String paginationSql = PaginationUtil.generatePaginationSql(
+                sql.toString(), offset, safePageSize, sqlParam);
+
+        return (List<ParcelVersionCompareVO>) this.executeQuery(paginationSql, sqlParam,
+                new BeanListProcessor(ParcelVersionCompareVO.class));
+    }
+
+    public int countVersionCompareByCondition(String pkOrg, String pkParcel,
+                                               Integer compareResult,
+                                               UFDateTime startTime, UFDateTime endTime) throws DAOException {
+        StringBuilder sql = new StringBuilder();
+        SQLParameter sqlParam = new SQLParameter();
+
+        sql.append("SELECT COUNT(1) FROM express_parcel_version_compare v ");
+        sql.append("WHERE v.dr = 0 ");
+        sql.append("AND v.pk_org = ? ");
+        sqlParam.addParam(pkOrg);
+
+        if (pkParcel != null && !pkParcel.isEmpty()) {
+            sql.append("AND v.pk_parcel = ? ");
+            sqlParam.addParam(pkParcel);
+        }
+        if (compareResult != null) {
+            sql.append("AND v.compare_result = ? ");
+            sqlParam.addParam(compareResult);
+        }
+        if (startTime != null) {
+            sql.append("AND v.compare_time >= ? ");
+            sqlParam.addParam(startTime);
+        }
+        if (endTime != null) {
+            sql.append("AND v.compare_time <= ? ");
+            sqlParam.addParam(endTime);
+        }
+
+        Object result = this.executeQuery(sql.toString(), sqlParam,
+                new ColumnProcessor());
+        return result != null ? ((Number) result).intValue() : 0;
     }
 }

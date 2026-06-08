@@ -270,4 +270,34 @@ public class ParcelVO extends SuperVO {
     public void setTs(UFDateTime ts) {
         this.ts = ts;
     }
+
+    @Override
+    public Object clone() {
+        ParcelVO vo = new ParcelVO();
+        vo.setPk_parcel(this.pk_parcel);
+        vo.setExpress_no(this.express_no);
+        vo.setReceiver_name(this.receiver_name);
+        vo.setReceiver_phone(this.receiver_phone);
+        vo.setPickup_code(this.pickup_code);
+        vo.setPickup_code_expire(this.pickup_code_expire);
+        vo.setInbound_time(this.inbound_time);
+        vo.setPickup_time(this.pickup_time);
+        vo.setParcel_status(this.parcel_status);
+        vo.setIs_vip(this.is_vip);
+        vo.setIs_large(this.is_large);
+        vo.setIs_remote(this.is_remote);
+        vo.setWeight(this.weight);
+        vo.setArea_code(this.area_code);
+        vo.setRemark(this.remark);
+        vo.setReturn_processing(this.return_processing);
+        vo.setPk_group(this.pk_group);
+        vo.setPk_org(this.pk_org);
+        vo.setCreator(this.creator);
+        vo.setCreationtime(this.creationtime);
+        vo.setModifier(this.modifier);
+        vo.setModifiedtime(this.modifiedtime);
+        vo.setDr(this.dr);
+        vo.setTs(this.ts);
+        return vo;
+    }
 }

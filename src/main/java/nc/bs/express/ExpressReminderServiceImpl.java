@@ -3,11 +3,14 @@ package nc.bs.express;
 import nc.bs.dao.DAOException;
 import nc.express.rule.ExpressRuleMatcher;
 import nc.express.util.ExpressUtils;
+import nc.express.util.ParcelVersionComparator;
 import nc.framework.pub.InvocationInfoProxy;
 import nc.itf.express.IExpressReminderService;
 import nc.vo.am.common.util.StringUtils;
+import nc.vo.express.ParcelVersionCompareVO;
 import nc.vo.express.ParcelVO;
 import nc.vo.express.ReminderLogVO;
+import nc.vo.express.ReminderResultVO;
 import nc.vo.express.ReminderRuleVO;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.lang.UFDateTime;
@@ -113,6 +116,13 @@ public class ExpressReminderServiceImpl implements IExpressReminderService {
     private ReminderLogVO generateReminderForParcel(ParcelVO parcel, List<ReminderRuleVO> rules)
             throws DAOException, BusinessException {
 
+        ReminderResultVO result = generateReminderForParcelWithVersion(parcel, rules);
+        return result != null ? result.getReminderLog() : null;
+    }
+
+    private ReminderResultVO generateReminderForParcelWithVersion(ParcelVO parcel, List<ReminderRuleVO> rules)
+            throws DAOException, BusinessException {
+
         if (parcel.getReturn_processing() != null && parcel.getReturn_processing() == 1) {
             return null;
         }
@@ -120,6 +130,8 @@ public class ExpressReminderServiceImpl implements IExpressReminderService {
         if (parcel.getParcel_status() != ParcelVO.STATUS_PENDING) {
             return null;
         }
+
+        ParcelVO oldParcel = (ParcelVO) parcel.clone();
 
         ReminderRuleVO rule = ruleMatcher.matchRule(parcel, rules);
         if (rule == null) {
@@ -134,6 +146,13 @@ public class ExpressReminderServiceImpl implements IExpressReminderService {
         int daysOverdue = ExpressUtils.calculateDaysOverdue(
                 parcel.getInbound_time().getMillis(),
                 rule.getRetention_days() != null ? rule.getRetention_days() : DEFAULT_RETENTION_DAYS);
+
+        if (daysOverdue < 0) {
+            return null;
+        }
+
+        List<ParcelVersionCompareVO> beforeCompare = ParcelVersionComparator.compareParcelBeforeReminder(
+                parcel, rule, daysOverdue);
 
         String userId = InvocationInfoProxy.getInstance().getUserId();
         String groupId = InvocationInfoProxy.getInstance().getGroupId();
@@ -165,7 +184,29 @@ public class ExpressReminderServiceImpl implements IExpressReminderService {
 
         sendReminder(parcel, rule, log);
 
-        return dao.insertReminderLog(log);
+        ReminderLogVO savedLog = dao.insertReminderLog(log);
+
+        ParcelVO newParcel = dao.findParcelByPK(parcel.getPk_parcel());
+        if (newParcel == null) {
+            newParcel = oldParcel;
+        }
+
+        List<ParcelVersionCompareVO> afterCompare = ParcelVersionComparator.compareParcelAfterReminder(
+                oldParcel, newParcel, savedLog, rule);
+
+        List<ParcelVersionCompareVO> allCompare = new ArrayList<>();
+        allCompare.addAll(beforeCompare);
+        allCompare.addAll(afterCompare);
+
+        for (ParcelVersionCompareVO compareVO : allCompare) {
+            compareVO.setPk_log(savedLog.getPk_log());
+            dao.insertVersionCompare(compareVO);
+        }
+
+        ReminderResultVO result = new ReminderResultVO(savedLog, allCompare);
+        result.setVersionCompareSummary(ParcelVersionComparator.generateVersionCompareSummary(allCompare));
+
+        return result;
     }
 
     private void sendReminder(ParcelVO parcel, ReminderRuleVO rule, ReminderLogVO log) {
@@ -344,6 +385,163 @@ public class ExpressReminderServiceImpl implements IExpressReminderService {
             return dao.findReminderLogsByParcel(pkParcel);
         } catch (DAOException e) {
             throw new BusinessException("查询催领记录失败：" + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<ReminderResultVO> generateRemindersWithVersion(String pkOrg, String[] pkParcels) throws BusinessException {
+        if (pkParcels == null || pkParcels.length == 0) {
+            throw new BusinessException("请选择需要催领的包裹");
+        }
+
+        List<ReminderResultVO> result = new ArrayList<>();
+        try {
+            List<ParcelVO> parcels = dao.findParcelsByPKs(pkParcels);
+            List<ReminderRuleVO> rules = dao.findAllEnabledRules(pkOrg);
+
+            for (ParcelVO parcel : parcels) {
+                ReminderResultVO reminderResult = generateReminderForParcelWithVersion(parcel, rules);
+                if (reminderResult != null) {
+                    result.add(reminderResult);
+                }
+            }
+        } catch (DAOException e) {
+            throw new BusinessException("生成催领记录失败：" + e.getMessage(), e);
+        }
+        return result;
+    }
+
+    @Override
+    public List<ReminderResultVO> generateOverdueRemindersWithVersion(String pkOrg) throws BusinessException {
+        List<ReminderResultVO> result = new ArrayList<>();
+        try {
+            List<ParcelVO> overdueParcels = dao.findOverdueParcels(pkOrg);
+            List<ReminderRuleVO> rules = dao.findAllEnabledRules(pkOrg);
+
+            for (ParcelVO parcel : overdueParcels) {
+                ReminderResultVO reminderResult = generateReminderForParcelWithVersion(parcel, rules);
+                if (reminderResult != null) {
+                    result.add(reminderResult);
+                }
+            }
+        } catch (DAOException e) {
+            throw new BusinessException("批量生成催领记录失败：" + e.getMessage(), e);
+        }
+        return result;
+    }
+
+    @Override
+    public ReminderResultVO resendPickupCodeWithVersion(String pkParcel) throws BusinessException {
+        try {
+            ParcelVO oldParcel = dao.findParcelByPK(pkParcel);
+            if (oldParcel == null) {
+                throw new BusinessException("包裹不存在");
+            }
+
+            if (oldParcel.getReturn_processing() != null && oldParcel.getReturn_processing() == 1) {
+                throw new BusinessException("退回处理中的包裹不能重发取件码");
+            }
+
+            if (oldParcel.getParcel_status() != ParcelVO.STATUS_PENDING) {
+                throw new BusinessException("包裹已取件或已退回，无需重发取件码");
+            }
+
+            UFDateTime now = new UFDateTime();
+            String userId = InvocationInfoProxy.getInstance().getUserId();
+
+            String newPickupCode = ExpressUtils.generatePickupCode();
+            ParcelVO newParcel = (ParcelVO) oldParcel.clone();
+            newParcel.setPickup_code(newPickupCode);
+            newParcel.setPickup_code_expire(getExpireTime(now));
+            newParcel.setModifier(userId);
+            newParcel.setModifiedtime(now);
+            dao.updateParcel(newParcel);
+
+            ReminderLogVO log = new ReminderLogVO();
+            log.setPk_group(oldParcel.getPk_group());
+            log.setPk_org(oldParcel.getPk_org());
+            log.setCreator(userId);
+            log.setCreationtime(now);
+            log.setModifier(userId);
+            log.setModifiedtime(now);
+            log.setDr(0);
+
+            log.setPk_parcel(oldParcel.getPk_parcel());
+            log.setReminder_type(ReminderRuleVO.TYPE_SMS);
+            log.setReminder_time(now);
+            log.setReminder_status(ReminderLogVO.STATUS_SENT);
+            log.setPickup_code(newPickupCode);
+            log.setReminder_count(dao.getReminderCountForParcel(pkParcel) + 1);
+            log.setOperator(userId);
+            log.setArea_code(oldParcel.getArea_code());
+            log.setRemark("取件码过期重发");
+            log.setReminder_content(ExpressUtils.generatePickupCodeResendContent(
+                    oldParcel.getReceiver_name(),
+                    newPickupCode,
+                    oldParcel.getExpress_no()));
+
+            sendSMS(oldParcel.getReceiver_phone(), log.getReminder_content());
+
+            ReminderLogVO savedLog = dao.insertReminderLog(log);
+
+            List<ParcelVersionCompareVO> compareList = ParcelVersionComparator.compareParcelForResend(
+                    oldParcel, newParcel, savedLog);
+
+            for (ParcelVersionCompareVO compareVO : compareList) {
+                compareVO.setPk_log(savedLog.getPk_log());
+                dao.insertVersionCompare(compareVO);
+            }
+
+            ReminderResultVO result = new ReminderResultVO(savedLog, compareList);
+            result.setVersionCompareSummary(ParcelVersionComparator.generateVersionCompareSummary(compareList));
+
+            return result;
+        } catch (DAOException e) {
+            throw new BusinessException("重发取件码失败：" + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<ParcelVersionCompareVO> findVersionCompareByParcel(String pkParcel) throws BusinessException {
+        try {
+            return dao.findVersionCompareByParcel(pkParcel);
+        } catch (DAOException e) {
+            throw new BusinessException("查询版本对比记录失败：" + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<ParcelVersionCompareVO> findVersionCompareByLog(String pkLog) throws BusinessException {
+        try {
+            return dao.findVersionCompareByLog(pkLog);
+        } catch (DAOException e) {
+            throw new BusinessException("查询版本对比记录失败：" + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Map<String, Object> queryVersionCompareLogs(String pkOrg, String pkParcel,
+                                                       Integer compareResult,
+                                                       UFDateTime startTime, UFDateTime endTime,
+                                                       int page, int pageSize) throws BusinessException {
+        try {
+            int pageStart = (page - 1) * pageSize;
+            List<ParcelVersionCompareVO> logs = dao.findVersionCompareByCondition(
+                    pkOrg, pkParcel, compareResult, startTime, endTime, pageStart, pageSize);
+
+            int total = dao.countVersionCompareByCondition(
+                    pkOrg, pkParcel, compareResult, startTime, endTime);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("list", logs);
+            result.put("total", total);
+            result.put("page", page);
+            result.put("pageSize", pageSize);
+            result.put("totalPages", (int) Math.ceil((double) total / pageSize));
+
+            return result;
+        } catch (DAOException e) {
+            throw new BusinessException("查询版本对比记录失败：" + e.getMessage(), e);
         }
     }
 
